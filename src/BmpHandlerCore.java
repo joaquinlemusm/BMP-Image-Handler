@@ -7,7 +7,6 @@ import java.util.Arrays;
 
 public class BmpHandlerCore {
         
-    private byte[] header;
     private byte[] pixels;
     private byte[] redPixels;
     private byte[] bluePixels;
@@ -18,9 +17,10 @@ public class BmpHandlerCore {
     private int pixelDataSize;
     private int tr, tb, tg;
     private String fileName;
+    private HeaderLector info;
 
     public BmpHandlerCore(String BMPImage) {
-        HeaderLector info = new HeaderLector(new File(BMPImage));
+        info = new HeaderLector(new File(BMPImage));
        
         this.width = info.getWidth();
         this.height = info.getHeight();  
@@ -28,12 +28,11 @@ public class BmpHandlerCore {
         // The 24-bit per pixel stores 1 pixel value per 3 bytes
         this.pixelDataSize = 3 * this.height * this.width;
 
-        this.header = new byte[54];
         this.pixels = new byte[this.pixelDataSize];
         this.fileName = BMPImage;
 
         try (FileInputStream BMP = new FileInputStream(new File(this.fileName))) {
-            BMP.read(header);
+            BMP.skip(54);
             BMP.read(this.pixels);
         } catch (FileNotFoundException fnfe) {
             fnfe.printStackTrace();
@@ -47,6 +46,10 @@ public class BmpHandlerCore {
         this.sepiaPixels = Arrays.copyOf(this.pixels, this.pixelDataSize);
     }
 
+    public byte[] getPixels() {
+        return this.pixels;
+    }
+
     public String getFileName(String file) {
         String fileName = file;
         String[] imageName = fileName.split("\\.bmp");
@@ -56,7 +59,7 @@ public class BmpHandlerCore {
     public void redImage() {
         try {
             FileOutputStream red = new FileOutputStream(getFileName(this.fileName) + "-red.bmp");
-            red.write(this.header);
+            red.write(this.info.getHeader());
             red.write(RGBColor("r"));
             red.close();
         } catch (IOException ioe) {
@@ -67,7 +70,7 @@ public class BmpHandlerCore {
     public void blueImage() {
         try {
             FileOutputStream blue = new FileOutputStream(getFileName(this.fileName) + "-blue.bmp");
-            blue.write(this.header);
+            blue.write(this.info.getHeader());
             blue.write(RGBColor("b"));
             blue.close();
         } catch (IOException ioe) {
@@ -78,7 +81,7 @@ public class BmpHandlerCore {
     public void greenImage() {
         try {
             FileOutputStream green = new FileOutputStream(getFileName(this.fileName) + "-green.bmp");
-            green.write(this.header);
+            green.write(this.info.getHeader());
             green.write(RGBColor("g"));
             green.close();
         } catch (IOException ioe) {
@@ -89,7 +92,7 @@ public class BmpHandlerCore {
     public void sepiaImage() {
         try {
             FileOutputStream sepia = new FileOutputStream(getFileName(this.fileName) + "-sepia.bmp");
-            sepia.write(this.header);
+            sepia.write(this.info.getHeader());
             sepia.write(sepiaColor());
             sepia.close();
         } catch (IOException ioe) {
