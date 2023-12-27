@@ -47,7 +47,7 @@ public class BmpHandlerCore {
         this.sepiaPixels = Arrays.copyOf(this.pixels, this.pixelDataSize);
     }
 
-    private String getFileName(String file) {
+    public String getFileName(String file) {
         String fileName = file;
         String[] imageName = fileName.split("\\.bmp");
         return imageName[0];
