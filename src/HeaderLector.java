@@ -24,6 +24,10 @@ public class HeaderLector {
         }
     }
 
+    public byte[] getHeader() {
+        return this.header;
+    }
+    
     public int getSize() {
         return this.fileSize;
     }
