@@ -12,6 +12,7 @@ public class BMPImageHandler {
 
         BmpHandlerCore basics = new BmpHandlerCore(file);
         BmpHandlerRotator rotate = new BmpHandlerRotator(file);
+        BmpHandlerResizer resize = new BmpHandlerResizer(file);
 
         switch(flag){
             case "-basics":
@@ -21,10 +22,12 @@ public class BMPImageHandler {
                 rotate.rotatedImages();
                 break;
             case "-resize":
-                System.out.println("Not implemented");
+                resize.resize();
                 break;
             case "-all":
-                System.out.println("Not implemented");
+                basics.coloredImages();
+                rotate.rotatedImages();
+                resize.resize();
                 break;  
             default:
                 System.out.println("Invalid flag");
