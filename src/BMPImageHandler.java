@@ -2,7 +2,7 @@ import java.io.IOException;
 
 public class BMPImageHandler {
     public static void main(String[] args) throws IOException {
-        if (args.length > 2 || args.length < 2) {
+        if (args.length != 2) {
             System.out.println("Usage: java BMPImageHandler <flag> <file>");
             return;
         }
@@ -14,24 +14,19 @@ public class BMPImageHandler {
         BmpHandlerRotator rotate = new BmpHandlerRotator(file);
         BmpHandlerResizer resize = new BmpHandlerResizer(file);
 
-        switch(flag){
-            case "-basics":
-                basics.coloredImages();
-                break;
-            case "-rotate":
-                rotate.rotatedImages();
-                break;
-            case "-resize":
-                resize.resize();
-                break;
-            case "-all":
+        switch (flag) {
+            case "-basics" -> basics.coloredImages();
+            case "-rotate" -> rotate.rotatedImages();
+            case "-resize" -> resize.resize();
+            case "-all" -> {
                 basics.coloredImages();
                 rotate.rotatedImages();
                 resize.resize();
-                break;  
-            default:
+            }
+            default -> {
                 System.out.println("Invalid flag");
                 return;
+            }
         }
         System.out.println("Changes over the BMP file were successful.");
     }
