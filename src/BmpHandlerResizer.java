@@ -27,26 +27,26 @@ public class BmpHandlerResizer {
     private void flatImage() {
         try {
             FileOutputStream flatImage = new FileOutputStream(this.core.getFileName(this.fileName)+"-flat.bmp");
-            flatImage.write(flatBMP());
-            flatImage.write(this.core.getPixels());
+            flatImage.write(flatBMPHeader());
+            flatImage.write(pixelsManipulation("f"));
             flatImage.close();
         } catch (IOException ioe) { 
             ioe.printStackTrace();
         }
     }
     
-    public void thinImage() {
+    private void thinImage() {
         try {
             FileOutputStream thinImage = new FileOutputStream(this.core.getFileName(this.fileName)+"-thin.bmp");
-            thinImage.write(thinBMP());
-            thinImage.write(this.core.getPixels());
+            thinImage.write(thinBMPHeader());
+            thinImage.write(pixelsManipulation("t"));
             thinImage.close();
         } catch (IOException ioe) { 
             ioe.printStackTrace();
         }
     }
 
-    private byte[] thinBMP() {
+    private byte[] thinBMPHeader() {
         byte[] newHeader = Arrays.copyOf(this.headerInfo.getHeader(), 54);
         // if we thin then our width reduces
         int newWidth = this.width / 2;
@@ -59,6 +59,23 @@ public class BmpHandlerResizer {
         newHeader[18] = (byte) (newWidth & 0xFF);
 
         int newFileSize = calculateNewFileSize("t");
+
+        return getBytes(newHeader, newFileSize);
+    }
+
+    private byte[] flatBMPHeader() {
+        byte[] newHeader = Arrays.copyOf(this.headerInfo.getHeader(), 54);
+        // if we flatten then our height reduces
+        int newHeight = this.height / 2;
+    
+        // I have to update the values where I found the header in order to resize the image
+        newHeader[25] = (byte) ((newHeight >> 24) & 0xFF);
+        newHeader[24] = (byte) ((newHeight >> 16) & 0xFF);
+        newHeader[23] = (byte) ((newHeight >> 8) & 0xFF);
+        newHeader[22] = (byte) (newHeight & 0xFF);
+    
+        int newFileSize = calculateNewFileSize("f");
+
         return getBytes(newHeader, newFileSize);
     }
 
@@ -71,19 +88,50 @@ public class BmpHandlerResizer {
         return newHeader;
     }
 
-    private byte[] flatBMP() {
-        byte[] newHeader = Arrays.copyOf(this.headerInfo.getHeader(), 54);
-        // if we flatten then our height reduces
-        int newHeight = this.height / 2;
+    private byte[] pixelsManipulation(String action) {
+        // right now focus on flat image
+        int sourceHeight = this.height;
+        int sourceWidth = this.width;
     
-        // I have to update the values where I found the header in order to resize the image
-        newHeader[25] = (byte) ((newHeight >> 24) & 0xFF);
-        newHeader[24] = (byte) ((newHeight >> 16) & 0xFF);
-        newHeader[23] = (byte) ((newHeight >> 8) & 0xFF);
-        newHeader[22] = (byte) (newHeight & 0xFF);
-    
-        int newFileSize = calculateNewFileSize("f");
-        return getBytes(newHeader, newFileSize);
+        if (action.equals("f")) {
+
+            int destinationHeight = this.height / 2;
+        
+            int resizePixelDataSize = 3 * destinationHeight * sourceWidth;
+            
+            byte[] resizePixels = new byte[resizePixelDataSize];
+        
+            for (int y = 0; y < destinationHeight; y++) {
+                for (int x = 0; x < sourceWidth; x++) {
+                    // Manipulates RGB channels, in order to have information in all channels
+                    for (int c = 0; c < 3; c++) {
+                        // Image subsampling and downsampling
+                        resizePixels[(y * sourceWidth + x) * 3 + c] = this.core.getPixels()[(2 * y * sourceWidth + x) * 3 + c];
+                    }
+                }
+            }
+            return resizePixels;
+
+        } else if (action.equals("t")) {
+            // right now focus on thin image
+            int destinationWidth = this.width / 2;
+        
+            int resizePixelDataSize = 3 * destinationWidth * sourceHeight;
+        
+            byte[] resizePixels = new byte[resizePixelDataSize];
+        
+            for (int y = 0; y < sourceHeight; y++) {
+                for (int x = 0; x < destinationWidth; x++) {
+                    // Manipulates RGB channels, in order to have information in all channels
+                    for (int c = 0; c < 3; c++) {
+                        // Image subsampling and downsampling
+                        resizePixels[(y * destinationWidth + x) * 3 + c] = this.core.getPixels()[(y * sourceWidth + 2 * x) * 3 + c];
+                    }
+                }
+            }
+            return resizePixels;
+        }
+        return new byte[0];
     }
     
     private int calculateNewFileSize(String action) {
@@ -94,5 +142,5 @@ public class BmpHandlerResizer {
             newFileSize = 54 + (this.width * (this.height / 2));
         }
         return newFileSize;
-     }
+    }
 }

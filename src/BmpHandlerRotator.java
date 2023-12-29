@@ -4,11 +4,11 @@ import java.io.File;
 
 public class BmpHandlerRotator {
     
-    private BmpHandlerCore rotate;
-    private HeaderLector headerInfo;
-    private String fileName;
-    private int height;
-    private int width;
+    private final BmpHandlerCore rotate;
+    private final HeaderLector headerInfo;
+    private final String fileName;
+    private final int height;
+    private final int width;
     
     public BmpHandlerRotator(String file) {
         this.rotate = new BmpHandlerCore(file);
